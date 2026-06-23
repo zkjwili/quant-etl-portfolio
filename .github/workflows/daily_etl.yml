@@ -4,7 +4,6 @@ on:
     - cron: '0 22 * * 1-5'
   workflow_dispatch:
 
-# THE FIX: Give the bot permission to upload files
 permissions:
   contents: write
 
@@ -12,7 +11,6 @@ jobs:
   run_etl:
     runs-on: ubuntu-latest
     env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +18,7 @@ jobs:
       - run: uv sync
 
       - name: Run ETL Pipeline
-        run: uv run python main.py --start $(date -d "3 days ago" +%Y-%m-%d)
+        run: uv run python main.py --start $(date -d "3 days ago" +%Y-%m-%d) 
 
       - name: Commit Data Lake Changes
         run: |

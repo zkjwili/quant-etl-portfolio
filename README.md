@@ -1,3 +1,5 @@
+<img width="1821" height="942" alt="Animation" src="https://github.com/user-attachments/assets/ee0120a0-5ae8-418c-8baa-930a6097c914" />
+
 [![Daily Macro ETL](https://github.com/zkjwili/quant-etl-portfolio/actions/workflows/daily_etl.yml/badge.svg)](https://github.com/zkjwili/quant-etl-portfolio/actions/workflows/daily_etl.yml)
 
 # Quant Project

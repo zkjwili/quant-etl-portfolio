@@ -1,27 +1,35 @@
 name: Daily Macro ETL
 on:
   schedule:
-    - cron: '0 22 * * 1-5' # 10 PM UTC weekdays
+    - cron: '0 22 * * 1-5'
   workflow_dispatch:
 
 jobs:
   run_etl:
     runs-on: ubuntu-latest
     env:
+      # This silences the Node 20 deprecation warning completely
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
       - run: uv sync
 
-      # Dynamic Bash Injection for 3-day lookback
       - name: Run ETL Pipeline
         run: uv run python main.py --start $(date -d "3 days ago" +%Y-%m-%d) 
 
-      # THE CLEAN FIX: No file_pattern, no bash scripts.
-      # It safely adds whatever exists, and ignores if nothing exists.
+      # REPLACED THE THIRD-PARTY ACTION WITH NATIVE BASH
       - name: Commit Data Lake Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore(data): automated daily ETL upsert"
-          skip_dirty_check: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Only try to add/commit if the data_lake folder actually has changes
+          if [ -n "$(git status --porcelain data_lake/)" ]; then
+            git add data_lake/
+            git commit -m "chore(data): automated daily ETL upsert"
+            git push
+          else
+            echo "No new data to commit (likely a weekend/holiday)."
+          fi

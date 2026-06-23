@@ -27,6 +27,8 @@ jobs:
           if [ -n "$(git status --porcelain data_lake/)" ]; then
             git add data_lake/
             git commit -m "chore(data): automated daily ETL upsert"
+            # THE FIX: Pull any website edits before pushing to prevent collisions
+            git pull --rebase origin main
             git push
           else
             echo "No new data to commit."

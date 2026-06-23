@@ -8,12 +8,15 @@ jobs:
   run_etl:
     runs-on: ubuntu-latest
     env:
-      # Injects your secure secret into the runner environment
+      NODE_VERSION: '20'              # <-- ADD THIS LINE
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
       - name: Install Python Environment (uv)
         uses: astral-sh/setup-uv@v4
 

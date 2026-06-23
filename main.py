@@ -181,7 +181,7 @@ def fetch_fred_csv(ticker: str, cfg: SourceConfig) -> pd.DataFrame:
 def extract_fred(cfg: SourceConfig) -> pd.DataFrame:
     """Download all configured FRED series and merge on their date index."""
     frames = [fetch_fred_csv(t, cfg) for t in cfg.fred_tickers]
-    merged = pd.concat(frames, axis=1)
+    merged = pd.concat(frames, axis=1, sort=False)
     return merged
 
 
@@ -231,7 +231,13 @@ def transform(yf_raw: pd.DataFrame, fred_raw: pd.DataFrame) -> pd.DataFrame:
     df = yf_close.join(fred, how="outer")
 
     # Market-first rules: drop rows without gold data, then forward-fill
-    df = df.dropna(subset=["gold_close"]).ffill().dropna()
+    df = df.dropna(subset=['gold_close'])
+
+    # THE GRACEFUL EXIT: If the market was closed (weekend/holiday), exit cleanly.
+    if df.empty:
+        print("[INFO] No new market data found (likely a weekend/holiday). Pipeline finished gracefully.")
+        # Return an empty DataFrame with the expected schema instead of None
+        return df.reset_index()
 
     log.info("Transformed %d rows × %d columns", len(df), len(df.columns))
 

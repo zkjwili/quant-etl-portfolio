@@ -1,3 +1,4 @@
 .env
 data_lake/
 ___pycache__/
+.trash_lake/

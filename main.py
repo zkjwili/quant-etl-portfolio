@@ -136,8 +136,8 @@ def extract_yfinance(cfg: SourceConfig) -> pd.DataFrame:
         auto_adjust=False,
     )
     if df is None or df.empty:
-        raise ValueError(
-            f"No data returned from Yahoo Finance for {cfg.yf_ticker}")
+        log.info("YFinance returned empty data (Weekend/Holiday).")
+        return pd.DataFrame(columns=["Close"])
     return df
 
 

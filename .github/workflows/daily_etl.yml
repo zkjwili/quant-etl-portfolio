@@ -33,4 +33,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(data): automated daily ETL upsert"
-          skip_dirty_check: true # Allows commit when no changes exist
+          # 'fail_on_no_changes' is not a valid input for this action; remove it to avoid workflow error

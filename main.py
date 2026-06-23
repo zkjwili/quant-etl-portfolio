@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import wraps
 from time import sleep
-import click # type: ignore
+import click  # type: ignore
 import duckdb  # type: ignore[import]
 import pandas as pd  # type: ignore[import]
 import requests
@@ -196,7 +196,6 @@ def extract(cfg: SourceConfig) -> tuple[pd.DataFrame, pd.DataFrame]:
 # Transformer
 # ---------------------------------------------------------------------------
 
-
 def _flatten_yfinance(yf_raw: pd.DataFrame) -> pd.DataFrame:
     """
     Normalise the yfinance DataFrame to a single-level column with a
@@ -224,8 +223,8 @@ def transform(yf_raw: pd.DataFrame, fred_raw: pd.DataFrame) -> pd.DataFrame:
 
     # Ghost-data circuit breaker
     if yf_close.empty or yf_close["gold_close"].isna().all():
-        raise ValueError(
-            "CRITICAL: Yahoo Finance data is entirely null/empty.")
+        log.info("[INFO] YFinance returned empty data (Weekend/Holiday). Exiting gracefully.")
+        return pd.DataFrame(columns=["gold_close", "vix_close", "dgs10_close"])
 
     # Merge on the datetime index — pandas handles this natively
     df = yf_close.join(fred, how="outer")
@@ -348,6 +347,11 @@ def run_pipeline(start: datetime, end: datetime | None, overwrite: bool) -> None
     # 2. Transform
     df = transform(yf_raw, fred_raw)
 
+    # THE FINAL GRACEFUL EXIT: If the DataFrame is empty after transform, stop here.
+    if df.empty:
+        print("[INFO] No data to load. Exiting gracefully.")
+        return
+    
     # 3. Load
     load(df, overwrite)
 

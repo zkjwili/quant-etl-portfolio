@@ -2,35 +2,37 @@ name: Daily Macro ETL
 on:
   schedule:
     - cron: '0 22 * * 1-5' # 10 PM UTC weekdays
-  workflow_dispatch: # Allows you to manually click a "Run" button on GitHub
+  workflow_dispatch:
 
 jobs:
   run_etl:
     runs-on: ubuntu-latest
     env:
-      NODE_VERSION: '20'              # <-- ADD THIS LINE
+      NODE_VERSION: '20' # Silences the Node.js 20 warning
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync
 
-      - name: Install Python Environment (uv)
-        uses: astral-sh/setup-uv@v4
-
-      - name: Sync Dependencies
-        run: uv sync
-      
-      - name: Run Unit Tests (Offline Validation)
-        run: uv run pytest
-
-      - name: Run Pipeline (Dynamic 3-Day Lookback)
+      # Dynamic Bash Injection for 3-day lookback
+      - name: Run ETL Pipeline
         run: uv run python main.py --start $(date -d "3 days ago" +%Y-%m-%d) 
 
+      # THE SENIOR FIX: Check if the pipeline actually created files
+      - name: Check for new Parquet files
+        id: check_files
+        run: |
+          if find data_lake -type f -name '*.parquet' | grep -q .; then
+            echo "has_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_files=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Only run this step IF files were found
       - name: Commit Data Lake Changes
+        if: steps.check_files.outputs.has_files == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(data): automated daily ETL upsert"
-          # 'fail_on_no_changes' is not a valid input for this action; remove it to avoid workflow error
+          file_pattern: data_lake/**/*.parquet

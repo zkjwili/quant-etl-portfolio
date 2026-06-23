@@ -21,7 +21,7 @@ jobs:
       # THE CLEAN FIX: No file_pattern, no bash scripts.
       # It safely adds whatever exists, and ignores if nothing exists.
       - name: Commit Data Lake Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "chore(data): automated daily ETL upsert"
-          fail_on_no_changes: false
+          skip_dirty_check: true

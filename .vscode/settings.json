@@ -1,0 +1,21 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticMode": "workspace",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/data_lake/**": true,
+    "**/__pycache__/**": true
+  },
+  "search.exclude": {
+    "**/.venv": true,
+    "**/data_lake": true,
+    "**/__pycache__": true
+  }
+}

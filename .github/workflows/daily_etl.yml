@@ -1,0 +1,33 @@
+name: Daily Macro ETL
+on:
+  schedule:
+    - cron: '0 22 * * 1-5' # Runs at 10 PM UTC, Monday through Friday
+  workflow_dispatch: # Allows you to trigger it manually
+
+jobs:
+  run_etl:
+    runs-on: ubuntu-latest
+    env:
+      # Injects your secure secret into the runner environment
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Python Environment (uv)
+        uses: astral-sh/setup-uv@v4
+
+      - name: Sync Dependencies
+        run: uv sync
+
+      - name: Run Pipeline (Dynamic 3-Day Lookback)
+        # This automatically looks back 3 days to catch revised data
+        run: uv run python main.py --start $(date -d "3 days ago" +%Y-%m-%d) 
+
+      - name: Commit Data Lake Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore(data): automated daily ETL upsert"
+          file_pattern: data_lake/**/*.parquet
+          skip_fetch: false
+          skip_checkout: false

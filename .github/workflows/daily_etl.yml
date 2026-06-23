@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
+
       - name: Install Python Environment (uv)
         uses: astral-sh/setup-uv@v4
 
@@ -33,5 +33,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(data): automated daily ETL upsert"
-          file_pattern: data_lake/**/*.parquet
           skip_dirty_check: true # Allows commit when no changes exist

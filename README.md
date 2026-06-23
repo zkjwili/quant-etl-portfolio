@@ -1,3 +1,5 @@
+[![Daily Macro ETL](https://github.com/zkjwili/quant-etl-portfolio/actions/workflows/daily_etl.yml/badge.svg)](https://github.com/zkjwili/quant-etl-portfolio/actions/workflows/daily_etl.yml)
+
 # Quant Project
 
 `main.py` is the primary script for this project. It contains the main entry point and coordinates the project workflow.

@@ -8,7 +8,6 @@ jobs:
   run_etl:
     runs-on: ubuntu-latest
     env:
-      NODE_VERSION: '20' # Silences the Node.js 20 warning
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -19,20 +18,10 @@ jobs:
       - name: Run ETL Pipeline
         run: uv run python main.py --start $(date -d "3 days ago" +%Y-%m-%d) 
 
-      # THE SENIOR FIX: Check if the pipeline actually created files
-      - name: Check for new Parquet files
-        id: check_files
-        run: |
-          if find data_lake -type f -name '*.parquet' | grep -q .; then
-            echo "has_files=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_files=false" >> $GITHUB_OUTPUT
-          fi
-
-      # Only run this step IF files were found
+      # THE CLEAN FIX: No file_pattern, no bash scripts.
+      # It safely adds whatever exists, and ignores if nothing exists.
       - name: Commit Data Lake Changes
-        if: steps.check_files.outputs.has_files == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(data): automated daily ETL upsert"
-          file_pattern: data_lake/**/*.parquet
+          fail_on_no_changes: false
